@@ -150,17 +150,16 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.NodeOrientation;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -179,8 +178,14 @@ public class ClientFormController01 {
 
     public ImageView imghappyMood;
     public TextFlow txtTextArea;
-    public VBox vBox;
+
     public TextArea txtArea;
+    public VBox vBox;
+
+    public boolean isImg;
+    public ImageView selectedImage;
+    public ScrollPane imgScroll;
+
     @FXML
     private ResourceBundle resources;
 
@@ -203,28 +208,45 @@ public class ClientFormController01 {
     @FXML
     private ImageView imgCamera;
     public FileChooser fileChooser;
-    public File path;
+    public File selectedFile;
     Socket socket;
     DataInputStream dataInputStream;
     DataOutputStream dataOutputStream;
     String message = "";
     static String username;
+    List<String> extensions;
 
+//    mken server eka me client manika hri itin server ek ekkne wenne anna hri pana ekk connect wen thn
     @FXML
     void initialize() {
+        selectedImage.setFitWidth(200.00);
+        selectedImage.setPreserveRatio(true);
+        imgScroll.setVisible(false);
         new Thread(() -> {
             try {
                 name = LoginFormController.username;
                 lblChatingName.setText(name);
+
                 socket = new Socket("localhost", 5002);
                 dataInputStream = new DataInputStream(socket.getInputStream());
                 dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
                 dataOutputStream.writeUTF(username);
                 dataOutputStream.flush();
 
                 while (true) {
-                    message = dataInputStream.readUTF();
-                    txtArea.appendText("\nServer: " + message);
+                    String message = dataInputStream.readUTF();
+//                    dn me data ekta mkdd krnne ywno wetenn  ek krnnko pana enm
+
+//                    api hbox ekk argen ned ekt msg ek dmme text ekkm
+                    HBox hBox=new HBox();//parent
+                    Text text=new Text(message);//child
+                    hBox.getChildren().add(text);//dn me hbox ek ar lokuma ek thynne vBox ek ekt dnnpna
+//                    dnn blnna manika
+                    vBox.getChildren().add(hBox);
+//                    hri e tk thrun neda ow ane athi pana mt titt wela tinne enm api doygmu 9 t enn pluwmdamt komath 6 passe nind gn nee aai ammll giym aherwnone wedk nee manikada mee;;; ow nniblpn mee tikem mn negitl idiye hoynn bee;;;;;;;;;;
+
+
                 }
 
 
@@ -236,22 +258,80 @@ public class ClientFormController01 {
     }
 
 
+//    me mthd ekn mokd wenne pana eken wenne yno text ekk nymai
     @FXML
     void btnSendOnAction(ActionEvent event) throws IOException {
-        dataOutputStream.writeUTF((username+" : "+txtMessage.getText()).trim());
-        dataOutputStream.flush();
+
         String msg = txtMessage.getText();
-        txtArea.appendText("Me: " + msg + "\n");
+        isImg = false;
+        dataOutputStream.writeBoolean(isImg);
+        dataOutputStream.writeUTF((username + " : " + msg.trim()));
+        dataOutputStream.flush();
+        HBox container = new HBox();
+        container.getChildren().add(new Text("You : ".concat(msg)));
+        vBox.getChildren().add(container);
         txtMessage.clear();
 
     }
 
+    @FXML
+    void btnCloseSendImgOnAction(ActionEvent event) {
+        selectedImage.setImage(null);
+        imgScroll.setVisible(false);
+    }
+
+    @FXML
+    void btnSendImgOnAction(ActionEvent event) {
+        try {
+            BufferedImage readImage = ImageIO.read(selectedFile);
+
+            String imageFormat = "";
+            for (String item : extensions) {
+                boolean b = selectedFile.getName().endsWith(item.replace("*.", ""));
+                if (b) {
+                    imageFormat = item.replace("*.", "");
+                    break;
+                }
+//                me data tk yna thnta ynn manika ne ne bn server ektne ynne ethnt ynn eke yna thnta
+            }
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(readImage, imageFormat, byteArrayOutputStream);
+
+            byte[] imgArray = byteArrayOutputStream.toByteArray();
+            int imgArrayLength = imgArray.length;
+
+            isImg = true;
+            dataOutputStream.writeBoolean(isImg);
+            dataOutputStream.writeInt(imgArrayLength);
+            dataOutputStream.write(imgArray);
+            dataOutputStream.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        imgScroll.setVisible(false);
+    }
+
 
     public void imagebtnClickOnMouse(MouseEvent mouseEvent) {
+        extensions = new ArrayList<>();
+        Collections.addAll(extensions, "*.jpeg", "*.jpg", "*.png");
         Stage stage = (Stage) ((Node) mouseEvent.getSource()).getScene().getWindow();
         fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter imgFilter = new FileChooser.ExtensionFilter("Images", extensions);
+        fileChooser.getExtensionFilters().add(imgFilter);
+
         fileChooser.setTitle("Open Image");
-        this.path = fileChooser.showOpenDialog(stage);
+        this.selectedFile = fileChooser.showOpenDialog(stage);
+
+        if (selectedFile != null) {
+            Image image = new Image(selectedFile.toURI().toString());
+            selectedImage.setImage(image);
+            imgScroll.setVisible(true);
+        } else {
+            imgScroll.setVisible(false);
+        }
+
 
     }
 

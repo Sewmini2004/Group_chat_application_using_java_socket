@@ -3,6 +3,8 @@ package controller;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ public class AcceptSocketServer extends Thread {
             String message = username + " joined the chat room. ";
             for (Socket accept : acceptSocket) {
                 DataOutputStream data = new DataOutputStream(accept.getOutputStream());
-                data.writeUTF("\n"+ message);
+                data.writeUTF("\n" + message);
                 data.flush();
             }
         } catch (IOException e) {
@@ -35,28 +37,31 @@ public class AcceptSocketServer extends Thread {
 
     }
 
-
+//oka dkunu pttata dgnna me window eka ane dn nee dn danna blnna
     @Override
     public void run() {
-        try {
-            while (true) {
-                String s = dataInputStream.readUTF();
-                for (Socket accept1 : acceptSocket) {
+        while (true) {
+            try {
+                boolean b = dataInputStream.readBoolean();
+                if (b) {
 
-                    if (accept1.getPort() == socket.getPort()) {
-                        continue;
+                    int imgArrayLength = dataInputStream.readInt();
+                    byte[] imgArray = new byte[imgArrayLength];
+                    dataInputStream.read(imgArray);
+
+                } else {
+                    String s = dataInputStream.readUTF();
+                    for (Socket accept:acceptSocket) {
+                       DataOutputStream dos =new DataOutputStream(accept.getOutputStream());
+                       dos.writeUTF(s);
+                       dos.flush();
+
                     }
-                    DataOutputStream dos = new DataOutputStream(accept1.getOutputStream());
-                    dos.writeUTF(s);
-                    dos.flush();
+
                 }
-
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
     }
 }
