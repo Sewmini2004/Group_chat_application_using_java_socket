@@ -37,7 +37,6 @@ public class AcceptSocketServer extends Thread {
 
     }
 
-//oka dkunu pttata dgnna me window eka ane dn nee dn danna blnna
     @Override
     public void run() {
         while (true) {

@@ -216,7 +216,6 @@ public class ClientFormController01 {
     static String username;
     List<String> extensions;
 
-//    mken server eka me client manika hri itin server ek ekkne wenne anna hri pana ekk connect wen thn
     @FXML
     void initialize() {
         selectedImage.setFitWidth(200.00);
@@ -236,15 +235,13 @@ public class ClientFormController01 {
 
                 while (true) {
                     String message = dataInputStream.readUTF();
-//                    dn me data ekta mkdd krnne ywno wetenn  ek krnnko pana enm
 
-//                    api hbox ekk argen ned ekt msg ek dmme text ekkm
+
                     HBox hBox=new HBox();//parent
                     Text text=new Text(message);//child
-                    hBox.getChildren().add(text);//dn me hbox ek ar lokuma ek thynne vBox ek ekt dnnpna
-//                    dnn blnna manika
+                    hBox.getChildren().add(text);
+
                     vBox.getChildren().add(hBox);
-//                    hri e tk thrun neda ow ane athi pana mt titt wela tinne enm api doygmu 9 t enn pluwmdamt komath 6 passe nind gn nee aai ammll giym aherwnone wedk nee manikada mee;;; ow nniblpn mee tikem mn negitl idiye hoynn bee;;;;;;;;;;
 
 
                 }
@@ -258,7 +255,6 @@ public class ClientFormController01 {
     }
 
 
-//    me mthd ekn mokd wenne pana eken wenne yno text ekk nymai
     @FXML
     void btnSendOnAction(ActionEvent event) throws IOException {
 
@@ -292,7 +288,7 @@ public class ClientFormController01 {
                     imageFormat = item.replace("*.", "");
                     break;
                 }
-//                me data tk yna thnta ynn manika ne ne bn server ektne ynne ethnt ynn eke yna thnta
+
             }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(readImage, imageFormat, byteArrayOutputStream);
